@@ -1,0 +1,24 @@
+{
+  "kind": "singleType",
+  "collectionName": "homepage",
+  "info": {
+    "singularName": "homepage",
+    "pluralName": "homepages",
+    "displayName": "Homepage"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "hero": {
+      "type": "json"
+    },
+    "sections": {
+      "type": "json"
+    },
+    "seo": {
+      "type": "json"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+# tests\n\nIntegration and unit tests for frontend. Use Jest, Testing Library and Playwright for E2E.

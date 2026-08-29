@@ -1,0 +1,21 @@
+{
+  "kind": "singleType",
+  "collectionName": "about_page",
+  "info": {
+    "singularName": "about",
+    "pluralName": "about-pages",
+    "displayName": "About"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "content": {
+      "type": "richtext"
+    },
+    "seo": {
+      "type": "json"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "kind": "singleType",
+  "collectionName": "rental_page",
+  "info": {
+    "singularName": "rental-page",
+    "pluralName": "rental-pages",
+    "displayName": "Rental Page"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "introduction": {
+      "type": "richtext"
+    },
+    "equipmentRentalDescription": {
+      "type": "richtext"
+    },
+    "spaceRentalDescription": {
+      "type": "richtext"
+    },
+    "trainingHall": {
+      "type": "richtext"
+    },
+    "contentProductionStudio": {
+      "type": "richtext"
+    },
+    "directCallCTA": {
+      "type": "string"
+    },
+    "seo": {
+      "type": "json"
+    }
+  }
+}

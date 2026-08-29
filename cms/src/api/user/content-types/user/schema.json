@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "custom_users",
+  "info": {
+    "singularName": "user",
+    "pluralName": "users",
+    "displayName": "CUser"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "fullName": {
+      "type": "string"
+    },
+    "mobile": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "mobileVerifiedAt": {
+      "type": "datetime"
+    },
+    "nationalIdEncrypted": {
+      "type": "text"
+    },
+    "nationalIdHash": {
+      "type": "string",
+      "unique": true
+    },
+    "status": {
+      "type": "enumeration",
+      "default": "ACTIVE",
+      "enum": [
+        "ACTIVE",
+        "INACTIVE",
+        "SUSPENDED"
+      ]
+    },
+    "otpVerified": {
+      "type": "boolean",
+      "default": false
+    },
+    "role": {
+      "type": "enumeration",
+      "default": "USER",
+      "enum": [
+        "USER",
+        "REQUEST_ADMIN",
+        "SUPER_ADMIN"
+      ]
+    },
+    "metadata": {
+      "type": "json"
+    }
+  }
+}

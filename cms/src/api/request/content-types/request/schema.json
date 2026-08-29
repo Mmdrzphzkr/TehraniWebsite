@@ -1,0 +1,71 @@
+{
+  "kind": "collectionType",
+  "collectionName": "requests",
+  "info": {
+    "singularName": "request",
+    "pluralName": "requests",
+    "displayName": "Request"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user.user",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "CONSULTATION",
+        "COOPERATION",
+        "EQUIPMENT_RENTAL",
+        "SPACE_RENTAL",
+        "CONTACT",
+        "EVENT_PARTICIPATION",
+        "COURSE_PARTICIPATION"
+      ]
+    },
+    "status": {
+      "type": "enumeration",
+      "required": true,
+      "default": "NEW",
+      "enum": [
+        "NEW",
+        "IN_REVIEW",
+        "CONTACTED",
+        "APPROVED",
+        "REJECTED",
+        "CLOSED"
+      ]
+    },
+    "submittedAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "relatedCourseWorkshop": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::course-workshop.course-workshop"
+    },
+    "relatedEvent": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::event.event"
+    },
+    "payload": {
+      "type": "json",
+      "required": true
+    },
+    "internalNotes": {
+      "type": "text"
+    },
+    "closedAt": {
+      "type": "datetime"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_webpages_text_blocks",
+  "info": {
+    "displayName": "text-block",
+    "icon": "underline"
+  },
+  "options": {},
+  "attributes": {
+    "text": {
+      "type": "text"
+    }
+  },
+  "config": {}
+}

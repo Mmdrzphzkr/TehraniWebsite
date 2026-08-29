@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_webpages_image_blocks",
+  "info": {
+    "displayName": "image-block",
+    "icon": "cast"
+  },
+  "options": {},
+  "attributes": {
+    "imageBlock": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  },
+  "config": {}
+}

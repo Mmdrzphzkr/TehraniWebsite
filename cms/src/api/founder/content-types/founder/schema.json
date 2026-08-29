@@ -1,0 +1,35 @@
+{
+  "kind": "singleType",
+  "collectionName": "founder",
+  "info": {
+    "singularName": "founder",
+    "pluralName": "founders",
+    "displayName": "Founder"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "richtext"
+    },
+    "photo": {
+      "type": "media",
+      "multiple": false
+    },
+    "flexibleBlocks": {
+      "type": "dynamiczone",
+      "components": [
+        "webpages.image-block",
+        "webpages.text-block"
+      ]
+    },
+    "seo": {
+      "type": "json"
+    }
+  }
+}

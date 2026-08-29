@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Brand palette sourced from the institute color board:
+     Chi-Gong / Rip Cord / Peacock Blue / Snow Globe / O'Neal Green */
+  --color-brand-red: #c33c36;
+  --color-brand-red-dark: #9e2f2a;
+  --color-brand-red-light: #de6b62;
+
+  --color-brand-gold: #d7ad63;
+  --color-brand-gold-dark: #b98a3e;
+  --color-brand-gold-light: #eac98c;
+
+  --color-brand-navy: #214962;
+  --color-brand-navy-dark: #15303f;
+  --color-brand-navy-light: #35617d;
+
+  --color-brand-cream: #f2f2e8;
+  --color-brand-cream-dark: #e3e3d2;
+
+  --color-brand-green: #3e5543;
+  --color-brand-green-dark: #2b3d30;
+  --color-brand-green-light: #577060;
+
+  /* Self-hosted via next/font/google in app/layout.tsx (the `vazirmatn` variable font on <html>) */
+  --font-sans: var(--font-vazirmatn), system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, 'Noto Sans',
+    sans-serif;
+}
+
+/* Global RTL setup. Vazirmatn is self-hosted via next/font/google in app/layout.tsx
+   (see the `vazirmatn` variable font applied on <html>), so no manual @font-face is needed. */
+
+html[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #f2f2e8; /* brand.cream fallback */
+  color: #15303f; /* brand.navy.dark fallback */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.7;
+}
+
+::selection {
+  background-color: #d7ad63; /* brand.gold */
+  color: #15303f; /* brand.navy.dark */
+}
+
+/* Example using logical properties: use these instead of left/right */
+.container-example {
+  padding-inline-start: 1rem; /* replaces padding-left */
+  padding-inline-end: 1rem;   /* replaces padding-right */
+}
+
+/* Utility for RTL-adjusted float-safe content if needed */
+.rtl-clear-left {
+  clear: inline-start;
+}
+
+/* Thin cinema-strip divider motif reused between homepage sections */
+.film-strip-divider {
+  height: 6px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0,
+    currentColor 14px,
+    transparent 14px,
+    transparent 28px
+  );
+}

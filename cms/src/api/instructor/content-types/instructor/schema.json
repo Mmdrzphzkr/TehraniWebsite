@@ -1,0 +1,71 @@
+{
+  "kind": "collectionType",
+  "collectionName": "instructors",
+  "info": {
+    "singularName": "instructor",
+    "pluralName": "instructors",
+    "displayName": "Instructor"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "regex": "^[\\u0600-\\u06FF\\uFB8A\\u067E\\u0686\\u06AF\\u200C\\u200D\\u0621\\u0622\\u0623\\u0624\\u0625\\u0626\\u0627\\u0628\\u0629\\u062A\\u062B\\u062C\\u062D\\u062E\\u062F\\u0630\\u0631\\u0632\\u0633\\u0634\\u0635\\u0636\\u0637\\u0638\\u0639\\u063A\\u0640\\u0641\\u0642\\u0643\\u0644\\u0645\\u0646\\u0647\\u0648\\u0649\\u064A\\u064B\\u064C\\u064D\\u064E\\u064F\\u0650\\u0651\\u0652\\u0653\\u0654\\u0655\\u0660\\u0661\\u0662\\u0663\\u0664\\u0665\\u0666\\u0667\\u0668\\u0669a-zA-Z0-9-]+$"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false
+    },
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::instructor-category.instructor-category"
+    },
+    "biography": {
+      "type": "richtext"
+    },
+    "resume": {
+      "type": "media",
+      "multiple": false
+    },
+    "teachingExperience": {
+      "type": "richtext"
+    },
+    "professionalExperience": {
+      "type": "richtext"
+    },
+    "achievements": {
+      "type": "json"
+    },
+    "socialLinks": {
+      "type": "json"
+    },
+    "media": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::media-item.media-item"
+    },
+    "seo": {
+      "type": "json"
+    },
+    "publicationStatus": {
+      "type": "enumeration",
+      "default": "DRAFT",
+      "enum": [
+        "DRAFT",
+        "PUBLISHED"
+      ]
+    }
+  }
+}

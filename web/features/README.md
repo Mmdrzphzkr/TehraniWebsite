@@ -1,0 +1,1 @@
+# features\n\nFeature area for domain-specific modules. Add subfolders for each feature (auth, requests, courses, events).
