@@ -4,7 +4,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '7d'; // 7 days by default
 
 export interface JwtPayload {
-  userId: number;
+  userId: string;
   role: 'USER' | 'REQUEST_ADMIN' | 'SUPER_ADMIN';
   mobile: string;
   iat?: number;
@@ -16,7 +16,7 @@ export interface JwtPayload {
  */
 export function generateToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string {
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRY,
+    expiresIn: JWT_EXPIRY as any,
   });
 }
 

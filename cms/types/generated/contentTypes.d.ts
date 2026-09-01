@@ -992,6 +992,41 @@ export interface ApiMediaTagMediaTag extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiOtpLogOtpLog extends Struct.CollectionTypeSchema {
+  collectionName: 'otp_logs';
+  info: {
+    displayName: 'OTP Log';
+    pluralName: 'otp-logs';
+    singularName: 'otp-log';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    attempts: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    expiresAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::otp-log.otp-log'
+    > &
+      Schema.Attribute.Private;
+    mobile: Schema.Attribute.String & Schema.Attribute.Required;
+    otp: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiRentalPageRentalPage extends Struct.SingleTypeSchema {
   collectionName: 'rental_page';
   info: {
@@ -1681,6 +1716,7 @@ declare module '@strapi/strapi' {
       'api::instructor.instructor': ApiInstructorInstructor;
       'api::media-item.media-item': ApiMediaItemMediaItem;
       'api::media-tag.media-tag': ApiMediaTagMediaTag;
+      'api::otp-log.otp-log': ApiOtpLogOtpLog;
       'api::rental-page.rental-page': ApiRentalPageRentalPage;
       'api::request.request': ApiRequestRequest;
       'api::site-setting.site-setting': ApiSiteSettingSiteSetting;

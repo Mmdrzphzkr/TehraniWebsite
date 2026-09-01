@@ -127,7 +127,7 @@ export default function AuthPage() {
                   onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
                   disabled={isSubmitting}
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent outline-none disabled:bg-slate-100"
-                  maxLength="11"
+                  maxLength={11}
                 />
                 <p className="mt-2 text-xs text-slate-500">
                   شماره تلفن همراه خود را وارد کنید. کد تأیید برای شما ارسال خواهد شد.
@@ -166,7 +166,7 @@ export default function AuthPage() {
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                   disabled={isSubmitting}
                   className="w-full px-4 py-3 text-center text-2xl border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent outline-none disabled:bg-slate-100"
-                  maxLength="6"
+                  maxLength={6}
                 />
               </div>
 
