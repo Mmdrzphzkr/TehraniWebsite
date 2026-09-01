@@ -3,6 +3,7 @@ import React from 'react'
 import { Vazirmatn } from 'next/font/google'
 import { Header } from '../components/layout/Header'
 import { Footer } from '../components/layout/Footer'
+import { Providers } from './providers'
 
 const vazirmatn = Vazirmatn({
   subsets: ['arabic', 'latin'],
@@ -20,9 +21,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable}>
       <body className="min-h-screen bg-brand-cream font-sans text-brand-navy-dark">
-        <Header />
-        {children}
-        <Footer />
+        <Providers>
+          <Header />
+          {children}
+          <Footer />
+        </Providers>
       </body>
     </html>
   )

@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "otp_logs",
+  "info": {
+    "singularName": "otp-log",
+    "pluralName": "otp-logs",
+    "displayName": "OTP Log"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "mobile": {
+      "type": "string",
+      "required": true
+    },
+    "otp": {
+      "type": "string",
+      "required": true,
+      "private": true
+    },
+    "expiresAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "attempts": {
+      "type": "integer",
+      "default": 0,
+      "required": true
+    }
+  }
+}
