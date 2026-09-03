@@ -17,8 +17,7 @@
     },
     "otp": {
       "type": "string",
-      "required": true,
-      "private": true
+      "required": true
     },
     "expiresAt": {
       "type": "datetime",
@@ -26,8 +25,8 @@
     },
     "attempts": {
       "type": "integer",
-      "default": 0,
-      "required": true
+      "required": true,
+      "default": 0
     }
   }
 }

@@ -26,8 +26,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const mediaItem = await getMediaItemBySlug(params.slug);
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug: encodedSlug } = await params;
+  const slug = decodeURI(encodedSlug);
+  const mediaItem = await getMediaItemBySlug(slug);
 
   if (!mediaItem) {
     notFound();

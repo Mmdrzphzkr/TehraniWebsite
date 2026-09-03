@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/utils/jwt';
+import { verifyTokenEdge } from '@/lib/utils/jwt-edge';
 
 // Paths that don't require authentication
 const PUBLIC_PATHS = [
@@ -16,7 +16,17 @@ const PUBLIC_PATHS = [
   '/instructors',
 ];
 
-export function middleware(request: NextRequest) {
+// Paths that require an authenticated session (checked via JWT cookie)
+const PROTECTED_PREFIXES = ['/dashboard', '/requests'];
+
+function redirectToAuth(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const redirectUrl = new URL('/auth', request.url);
+  redirectUrl.searchParams.set('redirect', pathname + request.nextUrl.search);
+  return NextResponse.redirect(redirectUrl);
+}
+
+export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')?.value;
   const pathname = request.nextUrl.pathname;
 
@@ -28,20 +38,21 @@ export function middleware(request: NextRequest) {
   }
 
   // Protected routes require authentication
-  if (pathname.startsWith('/dashboard')) {
-    if (!token || !verifyToken(token)) {
-      return NextResponse.redirect(new URL('/auth', request.url));
+  if (PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    const payload = token ? await verifyTokenEdge(token) : null;
+    if (!payload) {
+      return redirectToAuth(request);
     }
   }
 
-  // Admin routes require specific role
+  // Admin routes require a specific role
   if (pathname.startsWith('/admin')) {
-    if (!token) {
-      return NextResponse.redirect(new URL('/auth', request.url));
+    const payload = token ? await verifyTokenEdge(token) : null;
+    if (!payload) {
+      return redirectToAuth(request);
     }
 
-    const payload = verifyToken(token);
-    if (!payload || !['SUPER_ADMIN', 'REQUEST_ADMIN'].includes(payload.role)) {
+    if (!['SUPER_ADMIN', 'REQUEST_ADMIN'].includes(payload.role)) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }

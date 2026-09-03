@@ -2,6 +2,7 @@ import type { HeroContent } from '../../lib/types/cms';
 import { Container } from '../ui/Container';
 import { Button } from '../ui/Button';
 import { IconPlay, IconArrow } from '../ui/icons';
+import { StatCounter } from '../ui/StatCounter';
 
 export function Hero({ content }: { content: HeroContent }) {
   return (
@@ -39,7 +40,9 @@ export function Hero({ content }: { content: HeroContent }) {
           <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-brand-cream/10 pt-8">
             {content.stats.map((stat) => (
               <div key={stat.label}>
-                <dt className="text-2xl font-extrabold text-brand-gold sm:text-3xl">{stat.value}</dt>
+                <dt className="text-2xl font-extrabold text-brand-gold sm:text-3xl">
+                  +<StatCounter value={stat.value} />
+                </dt>
                 <dd className="mt-1 text-xs text-brand-cream/60 sm:text-sm">{stat.label}</dd>
               </div>
             ))}

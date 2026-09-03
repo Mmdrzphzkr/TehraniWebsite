@@ -33,25 +33,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/me');
       if (response.ok) {
         const data = await response.json();
-        if (data.authenticated) {
+        console.log('[Auth] Auth check response:', data);
+        if (data.authenticated && data.user) {
           setUser(data.user);
+          console.log('[Auth] User loaded:', data.user);
         }
       }
     } catch (err) {
-      console.error('Error checking auth:', err);
+      console.error('[Auth] Error checking auth:', err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const requestOtp = useCallback(async (phoneNumber: string) => {
     setError(null);
@@ -97,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(message);
       throw err;
     }
-  }, []);
+  }, [checkAuth]);
 
   const logout = useCallback(async () => {
     setError(null);

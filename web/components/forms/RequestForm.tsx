@@ -1,7 +1,9 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { RequestType, REQUEST_TYPE_LABELS } from '@/lib/schemas/request-forms';
+import { useToast } from '@/lib/context/toast-context';
 import {
   submitRequest,
   parseFieldErrors,
@@ -44,6 +46,8 @@ export function RequestForm({
   children,
   relatedIds,
 }: RequestFormProps) {
+  const router = useRouter();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState<Record<string, unknown>>(
     fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {})
   );
@@ -66,6 +70,10 @@ export function RequestForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Guard against duplicate/accidental double submissions
+    if (isSubmitting) return;
+
     setIsSubmitting(true);
     setErrorMessage('');
     setSuccessMessage('');
@@ -74,20 +82,37 @@ export function RequestForm({
     const response = await submitRequest(type, formData, relatedIds);
 
     if (response.success) {
-      setSuccessMessage(response.message || 'درخواست با موفقیت ثبت شد');
+      const message = response.message || 'درخواست با موفقیت ثبت شد';
+      setSuccessMessage(message);
+      showToast(message, 'success');
       setFormData(fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {}));
       onSuccess?.();
 
       // Reset success message after 5 seconds
       setTimeout(() => setSuccessMessage(''), 5000);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Authentication was lost/expired between page load and submission -
+    // send the user back through the authentication flow.
+    if (response.status === 401) {
+      showToast('برای ثبت درخواست ابتدا باید وارد حساب کاربری خود شوید', 'error');
+      const returnTo = window.location.pathname + window.location.search;
+      router.push(`/auth?redirect=${encodeURIComponent(returnTo)}`);
+      setIsSubmitting(false);
+      return;
+    }
+
+    const errors = parseFieldErrors(response.fieldErrors);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      showToast('لطفاً خطاهای فرم را برطرف کنید', 'error');
     } else {
-      const errors = parseFieldErrors(response.fieldErrors);
-      if (Object.keys(errors).length > 0) {
-        setFieldErrors(errors);
-      } else {
-        setErrorMessage(response.error || 'خطای نامشخص');
-        onError?.(response.error || 'خطای نامشخص');
-      }
+      const message = response.error || 'خطای نامشخص';
+      setErrorMessage(message);
+      showToast(message, 'error');
+      onError?.(message);
     }
 
     setIsSubmitting(false);

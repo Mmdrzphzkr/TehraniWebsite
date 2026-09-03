@@ -10,6 +10,7 @@ export interface RequestSubmissionResponse {
   error?: string;
   fieldErrors?: Record<string, string>;
   requestId?: string;
+  status?: number;
 }
 
 /**
@@ -43,10 +44,11 @@ export async function submitRequest(
         success: false,
         error: data.error || 'خطای نامشخص در ارسال درخواست',
         fieldErrors: data.fieldErrors,
+        status: response.status,
       };
     }
 
-    return data;
+    return { ...data, status: response.status };
   } catch (error) {
     console.error('Error submitting request:', error);
     return {

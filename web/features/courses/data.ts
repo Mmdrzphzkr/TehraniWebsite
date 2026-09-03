@@ -1,7 +1,7 @@
 import type { CourseWorkshop } from '../../lib/types/cms';
 
 const strapiUrl = process.env.STRAPI_URL || 'http://localhost:8000';
-const strapiToken = process.env.STRAPI_TOKEN;
+const strapiToken = process.env.STRAPI_API_TOKEN;
 
 type StrapiCourseResponse = {
   data?: Array<{
@@ -81,6 +81,60 @@ const fallbackCourses: CourseWorkshop[] = [
   },
   {
     id: 'course-2',
+    title: 'کارگاه تمرین صحنه',
+    slug: 'scene-practice-workshop',
+    type: 'WORKSHOP',
+    shortDescription: 'تمرین عملی صحنه‌های مختلف در محیطی تئاتری و سینمایی.',
+    instructors: [
+      {
+        id: 'instructor-2',
+        name: 'حسن رضایی',
+        slug: 'hassan-rezaei',
+        title: 'کارگردان و بازیگر',
+        avatarColor: 'brand-navy',
+        category: {
+          id: 'cat-1',
+          name: 'بازیگری',
+          slug: 'acting',
+        },
+      },
+    ],
+    startDate: '۱۴۰۵/۰۶/۱۵',
+    venue: 'استودیو',
+    totalCapacity: 15,
+    remainingCapacity: 0,
+    isFull: true,
+    price: 1800000,
+  },
+  {
+    id: 'course-4',
+    title: 'کارگاه تمرین صحنه',
+    slug: 'scene-practice-workshop',
+    type: 'WORKSHOP',
+    shortDescription: 'تمرین عملی صحنه‌های مختلف در محیطی تئاتری و سینمایی.',
+    instructors: [
+      {
+        id: 'instructor-2',
+        name: 'حسن رضایی',
+        slug: 'hassan-rezaei',
+        title: 'کارگردان و بازیگر',
+        avatarColor: 'brand-navy',
+        category: {
+          id: 'cat-1',
+          name: 'بازیگری',
+          slug: 'acting',
+        },
+      },
+    ],
+    startDate: '۱۴۰۵/۰۶/۱۵',
+    venue: 'استودیو',
+    totalCapacity: 15,
+    remainingCapacity: 0,
+    isFull: true,
+    price: 1800000,
+  },
+  {
+    id: 'course-3',
     title: 'کارگاه تمرین صحنه',
     slug: 'scene-practice-workshop',
     type: 'WORKSHOP',

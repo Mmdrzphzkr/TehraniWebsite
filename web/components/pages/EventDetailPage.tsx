@@ -115,7 +115,10 @@ export function EventDetailPage({ event }: { event: EventItem }) {
 
               {/* CTA */}
               {!event.isFull && (
-                <Button href="/contact" className="w-full bg-brand-red text-white hover:bg-brand-red/90">
+                <Button
+                  href={`/requests/event?eventId=${encodeURIComponent(event.id)}&eventName=${encodeURIComponent(event.title)}`}
+                  className="w-full bg-brand-red text-white hover:bg-brand-red/90"
+                >
                   درخواست شرکت
                 </Button>
               )}

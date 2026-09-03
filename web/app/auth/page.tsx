@@ -1,15 +1,49 @@
 'use client';
 
 import { useAuth } from '@/lib/context/auth-context';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useToast } from '@/lib/context/toast-context';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 
 type Step = 'phone' | 'otp';
 
+/**
+ * Only allow same-origin, absolute paths as a redirect destination to avoid
+ * an open-redirect vulnerability via the `redirect` query parameter.
+ */
+function getSafeRedirectTarget(value: string | null): string {
+  if (!value) return '/dashboard';
+  if (!value.startsWith('/') || value.startsWith('//')) return '/dashboard';
+  return value;
+}
+
+function AuthPageLoading() {
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
+          <p className="text-slate-600">درحال بارگذاری...</p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 export default function AuthPage() {
+  return (
+    <Suspense fallback={<AuthPageLoading />}>
+      <AuthPageContent />
+    </Suspense>
+  );
+}
+
+function AuthPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
+  const { showToast } = useToast();
   const [step, setStep] = useState<Step>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -18,11 +52,16 @@ export default function AuthPage() {
   const [remainingTime, setRemainingTime] = useState(0);
   const { requestOtp, login, error: authError, clearError } = useAuth();
 
+  const redirectTarget = getSafeRedirectTarget(searchParams.get('redirect'));
+
+  // Redirect automatically once the auth state confirms the user is logged
+  // in. This covers both the case right after a successful OTP verification
+  // and the case where an already-authenticated user lands on /auth directly.
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/dashboard');
+      router.replace(redirectTarget);
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, redirectTarget]);
 
   useEffect(() => {
     return () => clearError();
@@ -56,8 +95,11 @@ export default function AuthPage() {
       await requestOtp(phoneNumber);
       setStep('otp');
       setRemainingTime(60);
+      showToast('کد تأیید ارسال شد', 'success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'خطا در درخواست کد');
+      const message = err instanceof Error ? err.message : 'خطا در درخواست کد';
+      setError(message);
+      showToast(message, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -75,25 +117,19 @@ export default function AuthPage() {
     try {
       setIsSubmitting(true);
       await login(phoneNumber, otpCode);
-      router.push('/dashboard');
+      showToast('ورود با موفقیت انجام شد', 'success');
+      router.replace(redirectTarget);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'خطا در تأیید کد');
+      const message = err instanceof Error ? err.message : 'خطا در تأیید کد';
+      setError(message);
+      showToast(message, 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (isLoading) {
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy mx-auto mb-4"></div>
-            <p className="text-slate-600">درحال بارگذاری...</p>
-          </div>
-        </div>
-      </main>
-    );
+    return <AuthPageLoading />;
   }
 
   return (

@@ -121,7 +121,10 @@ export function CourseDetailPage({ course }: { course: CourseWorkshop }) {
 
               {/* CTA */}
               {!course.isFull && (
-                <Button href="/contact" className="w-full bg-brand-red text-white hover:bg-brand-red/90">
+                <Button
+                  href={`/requests/course?courseId=${encodeURIComponent(course.id)}&courseName=${encodeURIComponent(course.title)}`}
+                  className="w-full bg-brand-red text-white hover:bg-brand-red/90"
+                >
                   درخواست ثبت‌نام
                 </Button>
               )}

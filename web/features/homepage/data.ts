@@ -28,9 +28,9 @@ const fallbackHomepageContent: Omit<HomepageContent, 'courses' | 'events' | 'ins
     primaryCta: { label: 'مشاهده دوره‌ها و کارگاه‌ها', href: '/courses' },
     secondaryCta: { label: 'آشنایی با مؤسسه', href: '/about' },
     stats: [
-      { label: 'سال فعالیت', value: '+۱۵' },
-      { label: 'هنرجوی فارغ‌التحصیل', value: '+۲۰۰۰' },
-      { label: 'استاد و مدرس', value: '+۲۰' },
+      { label: 'سال فعالیت', value: '۱۵' },
+      { label: 'هنرجوی فارغ‌التحصیل', value: '۲۰۰۰' },
+      { label: 'استاد و مدرس', value: '۲۰' },
     ],
   },
   introduction: {
@@ -71,7 +71,7 @@ const fallbackHomepageContent: Omit<HomepageContent, 'courses' | 'events' | 'ins
 
 async function fetchHomepageFromStrapi(): Promise<Omit<HomepageContent, 'courses' | 'events' | 'instructors' | 'articles' | 'mediaItems'> | null> {
   const strapiUrl = process.env.STRAPI_URL?.replace(/\/$/, '') ?? 'http://localhost:8000';
-  const strapiToken = process.env.STRAPI_TOKEN;
+  const strapiToken = process.env.STRAPI_API_TOKEN;
   if (!strapiToken) {
     return null;
   }
@@ -84,7 +84,6 @@ async function fetchHomepageFromStrapi(): Promise<Omit<HomepageContent, 'courses
       },
       cache: 'no-store',
     });
-
     if (!response.ok) {
       return null;
     }

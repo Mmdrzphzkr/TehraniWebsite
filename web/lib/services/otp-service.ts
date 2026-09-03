@@ -1,4 +1,4 @@
-import {
+﻿import {
   generateOtp,
   canResendOtp,
   validatePhoneNumber,
@@ -22,7 +22,7 @@ export interface SendOtpResponse {
 export interface VerifyOtpResponse {
   success: boolean;
   message: string;
-  userId?: number;
+  userId?: string;
   token?: string;
   error?: string;
 }
@@ -38,16 +38,30 @@ export async function requestOtp(phoneNumber: string): Promise<SendOtpResponse> 
     }
 
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
+    console.log(`[OTP] Requesting OTP for: ${normalizedPhone}`);
+    console.log(`[OTP] Strapi URL: ${STRAPI_URL}`);
+    console.log(`[OTP] Token present: ${STRAPI_TOKEN ? 'yes' : 'no'}`);
 
     // Check for existing OTP
-    const existingOtpResponse = await fetch(
-      `${STRAPI_URL}/api/otp-logs?filters[mobile][$eq]=${normalizedPhone}&sort=createdAt:desc&pagination[limit]=1`,
-      {
-        headers: { Authorization: `Bearer ${STRAPI_TOKEN}` },
-      }
-    );
+    const fetchUrl = `${STRAPI_URL}/api/otp-logs?filters[mobile][$eq]=${normalizedPhone}&sort=createdAt:desc&pagination[limit]=1&fields=*`;
+    console.log(`[OTP] Fetching from: ${fetchUrl}`);
+
+    const fetchHeaders: Record<string, string> = {};
+    if (STRAPI_TOKEN) {
+      const bearer = 'Bearer ' + STRAPI_TOKEN;
+      fetchHeaders['Authorization'] = bearer;
+    }
+    console.log(`[OTP] Headers: ${JSON.stringify(Object.keys(fetchHeaders))}`);
+
+    const existingOtpResponse = await fetch(fetchUrl, {
+      headers: fetchHeaders,
+    });
+
+    console.log(`[OTP] Fetch response status: ${existingOtpResponse.status}`);
 
     if (!existingOtpResponse.ok) {
+      const errorText = await existingOtpResponse.text();
+      console.error(`[OTP] Fetch failed: ${existingOtpResponse.status} - ${errorText}`);
       throw new Error(`Failed to fetch OTP: ${existingOtpResponse.status}`);
     }
 
@@ -64,6 +78,7 @@ export async function requestOtp(phoneNumber: string): Promise<SendOtpResponse> 
             message: `لطفا ${resendCheck.secondsRemaining} ثانیه بعد تلاش کنید`,
           };
         }
+        console.log(`[OTP] Reusing existing OTP: ${existingOtp.id}`);
         return {
           success: true,
           message: 'کد تأیید برای شما ارسال شد',
@@ -75,12 +90,13 @@ export async function requestOtp(phoneNumber: string): Promise<SendOtpResponse> 
     // Generate new OTP
     const newOtp = generateOtp();
     const expiresAt = new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000);
+    console.log(`[OTP] Creating new OTP: ${newOtp}`);
 
     const createOtpResponse = await fetch(`${STRAPI_URL}/api/otp-logs`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${STRAPI_TOKEN}`,
+        ...(STRAPI_TOKEN ? { Authorization: 'Bearer ' + STRAPI_TOKEN } : {}),
       },
       body: JSON.stringify({
         data: {
@@ -92,14 +108,19 @@ export async function requestOtp(phoneNumber: string): Promise<SendOtpResponse> 
       }),
     });
 
+    console.log(`[OTP] Create response status: ${createOtpResponse.status}`);
+
     if (!createOtpResponse.ok) {
+      const errorText = await createOtpResponse.text();
+      console.error(`[OTP] Create failed: ${createOtpResponse.status} - ${errorText}`);
       throw new Error(`Failed to create OTP: ${createOtpResponse.status}`);
     }
 
     const createdOtpData = await createOtpResponse.json();
+    console.log(`[OTP] Created OTP record: ${createdOtpData.data.id}`);
 
     // Send SMS asynchronously
-    sendOtpSms(normalizedPhone, newOtp).catch(console.error);
+    // sendOtpSms(normalizedPhone, newOtp).catch(console.error);
 
     return {
       success: true,
@@ -119,94 +140,87 @@ export async function requestOtp(phoneNumber: string): Promise<SendOtpResponse> 
 /**
  * Verify OTP and return user token
  */
-export async function verifyOtp(
-  phoneNumber: string,
-  otpCode: string
-): Promise<VerifyOtpResponse> {
+export async function verifyOtp(phoneNumber: string, otpCode: string): Promise<VerifyOtpResponse> {
   try {
     const validation = validatePhoneNumber(phoneNumber);
     if (!validation.valid) {
       return { success: false, message: validation.error || 'شماره تلفن نامعتبر است' };
     }
 
-    const normalizedPhone = normalizePhoneNumber(phoneNumber);
-
-    if (!/^\d{6}$/.test(otpCode)) {
-      return { success: false, message: 'کد تأیید باید 6 رقم باشد' };
+    if (!otpCode || otpCode.length !== 6) {
+      return { success: false, message: 'کد تأیید باید ۶ رقم باشد' };
     }
 
-    // Get OTP log
-    const otpResponse = await fetch(
-      `${STRAPI_URL}/api/otp-logs?filters[mobile][$eq]=${normalizedPhone}&sort=createdAt:desc&pagination[limit]=1`,
+    const normalizedPhone = normalizePhoneNumber(phoneNumber);
+    console.log(`[OTP] Verifying OTP for: ${normalizedPhone}`);
+
+    // Fetch the most recent OTP
+    const otpFetchResponse = await fetch(
+      `${STRAPI_URL}/api/otp-logs?filters[mobile][$eq]=${normalizedPhone}&sort=createdAt:desc&pagination[limit]=1&fields=*`,
       {
-        headers: { Authorization: `Bearer ${STRAPI_TOKEN}` },
+        headers: STRAPI_TOKEN ? { Authorization: 'Bearer ' + STRAPI_TOKEN } : {},
       }
     );
 
-    if (!otpResponse.ok) {
-      throw new Error(`Failed to fetch OTP: ${otpResponse.status}`);
+    if (!otpFetchResponse.ok) {
+      throw new Error(`Failed to fetch OTP: ${otpFetchResponse.status}`);
     }
+    const otpData = await otpFetchResponse.json();
+    console.log(`otpData: ${JSON.stringify(otpData)}`);
+    const otpRecord = otpData.data?.[0];
+    console.log(`otpRecord.otp: ${JSON.stringify(otpRecord.otp)}`);
 
-    const otpData = await otpResponse.json();
-    const otpLog = otpData.data?.[0];
-
-    if (!otpLog) {
+    if (!otpRecord) {
       return { success: false, message: 'کد تأیید درخواست نشده است' };
     }
 
-    // Check expiry
-    const expiresAt = new Date(otpLog.expiresAt);
+    // Check if OTP is expired
+    const expiresAt = new Date(otpRecord.expiresAt);
     if (new Date() > expiresAt) {
       return { success: false, message: 'کد تأیید منقضی شده است' };
     }
 
-    // Check max attempts
-    if (otpLog.attempts >= OTP_MAX_ATTEMPTS) {
-      return { success: false, message: 'تعداد تلاش‌های نامعتبر به پایان رسیده است' };
+    // Check if max attempts exceeded
+    if (otpRecord.attempts >= OTP_MAX_ATTEMPTS) {
+      return { success: false, message: 'تعداد تلاش‌های ناموفق زیاد است' };
     }
 
-    // Verify code
-    if (otpLog.otp !== otpCode) {
-      await fetch(`${STRAPI_URL}/api/otp-logs/${otpLog.id}`, {
+    // Verify OTP code
+    if (otpRecord.otp !== otpCode) {
+      // Increment attempts
+      await fetch(`${STRAPI_URL}/api/otp-logs/${otpRecord.documentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${STRAPI_TOKEN}`,
+          ...(STRAPI_TOKEN ? { Authorization: 'Bearer ' + STRAPI_TOKEN } : {}),
         },
         body: JSON.stringify({
-          data: { attempts: otpLog.attempts + 1 },
+          data: {
+            attempts: otpRecord.attempts + 1,
+          },
         }),
       });
 
-      return {
-        success: false,
-        message: `کد تأیید نادرست است (${OTP_MAX_ATTEMPTS - otpLog.attempts - 1} تلاش باقی‌مانده)`,
-      };
+      return { success: false, message: 'کد تأیید اشتباه است' };
     }
 
-    // Get or create user
-    const userResult = await getOrCreateUser(normalizedPhone);
-    if (!userResult.success) {
-      return { success: false, message: userResult.error || 'خطا در ایجاد کاربر' };
-    }
+    // OTP verified successfully - get or create user
+    const user = await getOrCreateUser(normalizedPhone);
 
-    // Mark OTP as used
-    await fetch(`${STRAPI_URL}/api/otp-logs/${otpLog.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${STRAPI_TOKEN}`,
-      },
-      body: JSON.stringify({
-        data: { attempts: OTP_MAX_ATTEMPTS },
-      }),
-    }).catch(console.error);
+    // Delete/invalidate the OTP
+    await fetch(`${STRAPI_URL}/api/otp-logs/${otpRecord.id}`, {
+      method: 'DELETE',
+      headers: STRAPI_TOKEN ? { Authorization: 'Bearer ' + STRAPI_TOKEN } : {},
+    });
+
+    // Generate JWT token
+    const token = generateToken({ userId: user.id, mobile: user.mobile, role: (user.role || 'USER') as 'USER' | 'REQUEST_ADMIN' | 'SUPER_ADMIN' });
 
     return {
       success: true,
-      message: 'کد تأیید با موفقیت تأیید شد',
-      userId: userResult.userId,
-      token: userResult.token,
+      message: 'ورود موفقیت‌آمیز',
+      userId: user.id,
+      token,
     };
   } catch (error) {
     console.error('Error verifying OTP:', error);
@@ -219,116 +233,123 @@ export async function verifyOtp(
 }
 
 /**
- * Get or create user
+ * Send OTP via SMS (gracefully fail if SMS service not available)
  */
-async function getOrCreateUser(
-  phoneNumber: string
-): Promise<{ success: boolean; userId?: number; token?: string; error?: string }> {
+async function sendOtpSms(phoneNumber: string, otp: string): Promise<void> {
   try {
-    // Check existing user
-    const userResponse = await fetch(
-      `${STRAPI_URL}/api/users?filters[mobile][$eq]=${phoneNumber}&pagination[limit]=1`,
-      {
-        headers: { Authorization: `Bearer ${STRAPI_TOKEN}` },
-      }
-    );
+    const farazUsername = process.env.FARAZ_SMS_USERNAME;
+    const farazPassword = process.env.FARAZ_SMS_PASSWORD;
+    const farazPatternId = process.env.FARAZ_SMS_PATTERN_ID;
 
-    if (!userResponse.ok) {
-      throw new Error(`Failed to fetch user: ${userResponse.status}`);
+    // If no SMS credentials configured, skip SMS sending
+    if (!farazUsername || !farazPassword || !farazPatternId) {
+      console.log('[OTP] SMS service not configured, skipping SMS sending');
+      return;
     }
 
-    const userData = await userResponse.json();
-    let user = userData.data?.[0];
-
-    if (!user) {
-      const createUserResponse = await fetch(`${STRAPI_URL}/api/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${STRAPI_TOKEN}`,
-        },
-        body: JSON.stringify({
-          data: {
-            mobile: phoneNumber,
-            otpVerified: true,
-            mobileVerifiedAt: new Date().toISOString(),
-            status: 'ACTIVE',
-            role: 'USER',
-          },
-        }),
-      });
-
-      if (!createUserResponse.ok) {
-        throw new Error(`Failed to create user: ${createUserResponse.status}`);
-      }
-
-      user = (await createUserResponse.json()).data;
-    } else {
-      await fetch(`${STRAPI_URL}/api/users/${user.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${STRAPI_TOKEN}`,
-        },
-        body: JSON.stringify({
-          data: {
-            otpVerified: true,
-            mobileVerifiedAt: new Date().toISOString(),
-          },
-        }),
-      }).catch(console.error);
-    }
-
-    const token = generateToken({
-      userId: user.id,
-      role: user.role || 'USER',
-      mobile: user.mobile,
+    const params = new URLSearchParams({
+      username: farazUsername,
+      password: farazPassword,
+      to: phoneNumber,
+      pattern_id: farazPatternId,
+      token: otp,
     });
 
-    return { success: true, userId: user.id, token };
+    const response = await fetch('https://ippanel.com/api/send-verify-code', {
+      method: 'POST',
+      body: params,
+    });
+
+    if (!response.ok) {
+      console.error(`[SMS] Send failed: ${response.status} ${response.statusText}`);
+    }
   } catch (error) {
-    console.error('Error in getOrCreateUser:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+    console.error('[SMS] Error sending SMS:', error);
+    // Don't throw - SMS is not critical
   }
 }
 
 /**
- * Send OTP via FarazSMS
+ * Get existing user or create new one
+ * Uses the custom CUser content type (api::user.user)
+ * Collection: custom_users (has 'mobile' field)
+ * Does NOT use plugin::users-permissions.user (which requires password)
  */
-async function sendOtpSms(phoneNumber: string, otpCode: string): Promise<void> {
+export async function getOrCreateUser(phoneNumber: string): Promise<{ id: string; mobile: string; role?: string }> {
   try {
-    const apiKey = process.env.FARAZSMS_APIKEY;
-    const from = process.env.FARAZSMS_FROM;
-    const patternCode = process.env.FARAZSMS_PATTERN_CODE;
+    console.log(`[User] Getting or creating user: ${phoneNumber}`);
 
-    if (!apiKey || !from || !patternCode) {
-      console.warn('FarazSMS configuration incomplete');
-      return;
+    // Query custom CUser by mobile number
+    // Note: The custom user endpoint is /api/users but uses custom_users collection
+    const userQuery = new URLSearchParams({
+      'filters[mobile][$eq]': phoneNumber,
+      'fields': 'id,mobile,role,otpVerified',
+    });
+
+    const fetchUrl = `${STRAPI_URL}/api/users?${userQuery.toString()}`;
+    console.log(`[User] Querying user from custom CUser collection: ${fetchUrl}`);
+
+    const userResponse = await fetch(fetchUrl, {
+      headers: STRAPI_TOKEN ? { Authorization: 'Bearer ' + STRAPI_TOKEN } : {},
+    });
+
+    console.log(`[User] User query response status: ${userResponse.status}`);
+
+    if (userResponse.ok) {
+      const userData = await userResponse.json();
+      console.log(`[User] User query response: ${JSON.stringify(userData)}`);
+
+      const existingUser = userData.data?.[0];
+
+      if (existingUser) {
+        console.log(`[User] Found existing user: ${existingUser.id}`);
+        return {
+          id: String(existingUser.id),
+          mobile: existingUser.mobile,
+          role: existingUser.role || 'USER',
+        };
+      }
     }
 
-    const response = await fetch('https://api.iranpayamak.com/ws/v1/sms/pattern', {
+    // User doesn't exist - create new one in custom CUser collection
+    console.log(`[User] Creating new user for: ${phoneNumber} in custom CUser collection`);
+    const createResponse = await fetch(`${STRAPI_URL}/api/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Api-Key': apiKey,
-        Accept: 'application/json',
+        ...(STRAPI_TOKEN ? { Authorization: 'Bearer ' + STRAPI_TOKEN } : {}),
       },
       body: JSON.stringify({
-        code: patternCode,
-        recipient: phoneNumber,
-        line_number: from,
-        attributes: { otp: otpCode },
-        number_format: 'english',
+        data: {
+          mobile: phoneNumber,
+          fullName: '',
+          otpVerified: true,
+          mobileVerifiedAt: new Date().toISOString(),
+          role: 'USER',
+          status: 'ACTIVE',
+        },
       }),
     });
 
-    if (!response.ok) {
-      console.error(`FarazSMS error: ${response.status}`);
+    console.log(`[User] Create response status: ${createResponse.status}`);
+
+    if (!createResponse.ok) {
+      const errorText = await createResponse.text();
+      console.error(`[User] Create failed: ${createResponse.status} - ${errorText}`);
+      throw new Error(`Failed to create user: ${createResponse.status} - ${errorText}`);
     }
+
+    const newUserData = await createResponse.json();
+    console.log(`[User] Create response: ${JSON.stringify(newUserData)}`);
+    console.log(`[User] Created new user: ${newUserData.data.id}`);
+
+    return {
+      id: String(newUserData.data.id),
+      mobile: newUserData.data.mobile,
+      role: newUserData.data.role || 'USER',
+    };
   } catch (error) {
-    console.error('Error sending OTP SMS:', error);
+    console.error('[User] Error in getOrCreateUser:', error);
+    throw error;
   }
 }

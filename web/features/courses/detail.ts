@@ -2,7 +2,7 @@ import type { CourseWorkshop } from '../../lib/types/cms';
 import { getCoursesData } from './data';
 
 const strapiUrl = process.env.STRAPI_URL || 'http://localhost:8000';
-const strapiToken = process.env.STRAPI_TOKEN;
+const strapiToken = process.env.STRAPI_API_TOKEN;
 
 type StrapiCourseDetailResponse = {
   data: Array<{

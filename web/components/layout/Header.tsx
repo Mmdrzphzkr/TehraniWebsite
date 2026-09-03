@@ -1,7 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '@/lib/context/auth-context';
+import { useToast } from '@/lib/context/toast-context';
 import { Container } from '../ui/Container';
 import { Button } from '../ui/Button';
 import { IconMenu, IconClose, IconSearch } from '../ui/icons';
@@ -20,7 +23,21 @@ const NAV_ITEMS = [
 ];
 
 export function Header() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { showToast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      showToast('با موفقیت خارج شدید', 'success');
+      setIsMenuOpen(false);
+      router.push('/');
+    } catch {
+      showToast('خطا در خروج از حساب کاربری', 'error');
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-brand-navy/10 bg-brand-cream/95 backdrop-blur">
@@ -55,9 +72,31 @@ export function Header() {
           >
             <IconSearch className="h-5 w-5" />
           </button>
-          <Button href="/auth/sign-in" variant="secondary" className="px-5 py-2.5">
-            ورود / ثبت‌نام
-          </Button>
+
+          {!isLoading && isAuthenticated && user ? (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-brand-navy/80 transition-colors hover:bg-brand-navy/5 hover:text-brand-navy"
+              >
+                {/* <div className="h-8 w-8 rounded-full bg-brand-navy/10 flex items-center justify-center text-xs font-bold text-brand-navy">
+                  {user.mobile.slice(-2)}
+                </div> */}
+                <span className="hidden sm:inline">داشبورد</span>
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg px-3 py-2 text-sm font-semibold text-brand-navy/80 transition-colors hover:bg-brand-navy/5 hover:text-brand-navy"
+              >
+                خروج
+              </button>
+            </div>
+          ) : (
+            <Button href="/auth" variant="secondary" className="px-5 py-2.5">
+              ورود / ثبت‌نام
+            </Button>
+          )}
         </div>
 
         <button
@@ -83,9 +122,28 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
-            <Button href="/auth/sign-in" variant="secondary" className="mt-2 justify-center">
-              ورود / ثبت‌نام
-            </Button>
+            {!isLoading && isAuthenticated && user ? (
+              <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-brand-navy/10">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-navy/80 hover:bg-brand-navy/5 hover:text-brand-navy"
+                >
+                  داشبورد
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full text-right rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-navy/80 hover:bg-brand-navy/5 hover:text-brand-navy"
+                >
+                  خروج
+                </button>
+              </div>
+            ) : (
+              <Button href="/auth" variant="secondary" className="mt-2 justify-center">
+                ورود / ثبت‌نام
+              </Button>
+            )}
           </Container>
         </div>
       ) : null}

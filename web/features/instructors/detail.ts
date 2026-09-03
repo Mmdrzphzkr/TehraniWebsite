@@ -2,7 +2,7 @@ import type { Instructor } from '../../lib/types/cms';
 import { getInstructorsData } from './data';
 
 const strapiUrl = process.env.STRAPI_URL || 'http://localhost:8000';
-const strapiToken = process.env.STRAPI_TOKEN;
+const strapiToken = process.env.STRAPI_API_TOKEN;
 
 type StrapiInstructorDetailResponse = {
   data: Array<{
